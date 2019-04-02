@@ -1,6 +1,7 @@
 package com.github.lxn.mybatisEncryptor.core;
 
 import com.github.lxn.mybatisEncryptor.util.AESCoder;
+import com.github.lxn.mybatisEncryptor.util.StringUtils;
 import com.github.lxn.mybatisEncryptor.util.XmlUtil;
 import com.google.common.base.Throwables;
 import lombok.AllArgsConstructor;
@@ -11,7 +12,6 @@ import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.*;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
-import org.springframework.util.StringUtils;
 
 import java.io.FileNotFoundException;
 import java.lang.reflect.Field;

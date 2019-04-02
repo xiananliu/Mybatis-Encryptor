@@ -5,7 +5,7 @@ package com.github.lxn.mybatisEncryptor.util;
  *
  * @author zhanghanlin6
  */
-public class StringUtils  {
+public class StringUtils  extends lxnStringUtils {
 
     public static String parseByte2HexStr(byte[] buf) {
         StringBuffer sb = new StringBuffer();
