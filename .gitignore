@@ -1,23 +1,97 @@
-# Compiled class file
-*.class
+# Gradle
+build
+.gradle
 
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+testdata/
+# Java gitignore #
+.class
+.log
 
 # Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
+*.war
+*.ear
+
+#hsf files
+configuration
+
+# maven gitignore#
+target/**
+
+.svn/
+
+# intelliJ.gitignore #
+.idea
+*.iml
+*.ipr
+*.iws
+
+# Eclipse git ignore#
+*.pydevproject
+.project
+.metadata
+bin/**
+target/**
+*/bin/**
+*/target/**
+tmp/**
+tmp/**/*
+configuration/**
+*.tmp
+*.bak
+*.orig
+*.swp
+*~.nib
+.classpath
+.settings/
+.loadpath
+.fileTable*
+.cache
+pom.xml.versionsBackup
+
+# External tool builders
+.externalToolBuilders/
+
+# Locally stored "Eclipse launch configurations"
+*.launch
+
+# CDT-specific
+.cproject
+
+# PDT-specific
+.buildpath
+
+#log
+*.log
+*.log.*
+
+# Windows Thumbs.db
+*.db
+
+# OSX
+.DS_Store
+
+# sass gitignore#
+.sass-cache
+.idea
+
+# tcc_coverage
+coverage.ec
+
+
+
+config.client.*
+
+temp/
+*.pid
+*.orig
+
+hsf.configuration/
+
+# code coverage report
+*.ec
+
+#hsf test
+*.instance
+out
+**/idea-sandbox
