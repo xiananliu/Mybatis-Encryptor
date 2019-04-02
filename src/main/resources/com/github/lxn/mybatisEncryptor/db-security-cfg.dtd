@@ -1,0 +1,9 @@
+<!ELEMENT settings (mapper*,setting)>
+        <!ELEMENT setting (aeskey)>
+        <!ELEMENT aeskey (#PCDATA)>
+        <!--<!ELEMENT scanPackage (#PCDATA)>-->
+        <!ELEMENT mapper (property+)>
+        <!ATTLIST mapper className #REQUIRED>
+        <!ATTLIST mapper special (true|false) "false">
+        <!ELEMENT property (#PCDATA)>
+        <!--<!ATTLIST property value>-->
