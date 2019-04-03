@@ -1,7 +1,6 @@
 package com.github.lxn.mybatisEncryptor.util;
 
 import com.thoughtworks.xstream.XStream;
-import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;

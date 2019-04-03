@@ -112,4 +112,32 @@ public class StringUtils  extends lxnStringUtils {
     	return s;
     }
 
+    public static String replace(String inString, String oldPattern, String newPattern) {
+        if (hasLength(inString) && hasLength(oldPattern) && newPattern != null) {
+            int index = inString.indexOf(oldPattern);
+            if (index == -1) {
+                return inString;
+            } else {
+                int capacity = inString.length();
+                if (newPattern.length() > oldPattern.length()) {
+                    capacity += 16;
+                }
+
+                StringBuilder sb = new StringBuilder(capacity);
+                int pos = 0;
+
+                for(int patLen = oldPattern.length(); index >= 0; index = inString.indexOf(oldPattern, pos)) {
+                    sb.append(inString.substring(pos, index));
+                    sb.append(newPattern);
+                    pos = index + patLen;
+                }
+
+                sb.append(inString.substring(pos));
+                return sb.toString();
+            }
+        } else {
+            return inString;
+        }
+    }
+
 }

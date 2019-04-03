@@ -11,11 +11,6 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-            <version>4.1.6.RELEASE</version>
-        </dependency>
-        <dependency>
             <groupId>com.github.miemiedev</groupId>
             <artifactId>mybatis-paginator</artifactId>
             <version>1.2.15</version>
