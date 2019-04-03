@@ -29,9 +29,9 @@ mybatis-encryptor mybatis 自动加解密插件
 
 **属性解释**
 
-aeskey：目前仅支持aes加密，这里填key即可
-mapper 的className属性：需要加解密的Po名
-mapper 的 special 属性：兼容Dao层生成工具生成的 QueryBuilder、UpdateBuilder等内部对象，如果你同时使用下面介绍的Dao生成工具，请设置为 special="true"，否则不需要设置
+aeskey：目前仅支持aes加密，这里填key即可  
+mapper 的className属性：需要加解密的Po名  
+mapper 的 special 属性：兼容Dao层生成工具生成的 QueryBuilder、UpdateBuilder等内部对象，如果你同时使用下面介绍的Dao生成工具，请设置为 special="true"，否则不需要设置  
 property：需要加解密的字段名
 
 **mybatis配置拦截器**
