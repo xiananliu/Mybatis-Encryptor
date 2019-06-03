@@ -30,9 +30,10 @@ import static java.util.Locale.ENGLISH;
 public class DBInterceptor implements Interceptor {
 
 
-    private Map<Class,Map<String,MethodBox>> cache =new HashMap<>();
+//    private Map<Class,Map<String,MethodBox>> cache =new HashMap<>();
 
     private Settings settings;
+
 
 
 //
@@ -158,19 +159,16 @@ public class DBInterceptor implements Interceptor {
         if (readMethod==null||writeMethod==null){
             return;
         }
-
-        if(cache.get(clazz)==null){
-            cache.put(clazz,new HashMap<>());
-        }
-        Map<String,MethodBox> propertyDescriptorMap=cache.get(clazz);
-        propertyDescriptorMap.put(field,new MethodBox(readMethod,writeMethod));
+        //保存文件访问对象
+        BeanAccessUtil.addMethod(clazz,field,readMethod,writeMethod);
     }
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
         String methodName = invocation.getMethod().getName();
         Object parameter=invocation.getArgs()[1];
-
+        //删除缓存的入参老值
+        OriginalValManager.clear();
 
         if(parameter instanceof Map) {
             //浅复制字段去重，避免同一个字段被加密多次
@@ -190,15 +188,16 @@ public class DBInterceptor implements Interceptor {
             }
         //特殊处理
         }else if (parameter.getClass().getName().endsWith("UpdateBuilder")){
-            Class updateBuilderClazz=  Class.forName(parameter.getClass().getName());
-            Map<String,MethodBox> cacheMethod=cache.get(updateBuilderClazz);
-            if (cacheMethod!=null){
+                Class updateBuilderClazz=  Class.forName(parameter.getClass().getName());
                 //读取set 和 where
-                Object setObj=cacheMethod.get("set").getReadMethod().invoke(parameter);
-                Object whereObj=cacheMethod.get("where").getReadMethod().invoke(parameter);
-                modifyField(setObj,true);
-                modifyField(whereObj,true);
-            }
+                Object setObj=BeanAccessUtil.readValue(updateBuilderClazz,"set",parameter);
+                if (setObj!=null){
+                    modifyField(setObj,true);
+                }
+                Object whereObj=BeanAccessUtil.readValue(updateBuilderClazz,"where",parameter);
+                if (whereObj!=null) {
+                    modifyField(whereObj, true);
+                }
         }else {
             if (parameter instanceof List){
                 List listParam=(List) parameter;
@@ -210,23 +209,26 @@ public class DBInterceptor implements Interceptor {
             }
         }
 
-        Object object = invocation.proceed();
+        try {
 
-        if ("query".equals(methodName)) {
-            //解密
-            if(object instanceof List){
-                for (Object each:(List)object){
-                    modifyField(each,false);
+            Object object = invocation.proceed();
+            if ("query".equals(methodName)) {
+                //解密
+                if(object instanceof List){
+                    for (Object each:(List)object){
+                        modifyField(each,false);
+                    }
+                }else {
+                    modifyField(object,false);
                 }
-            }else {
-                modifyField(object,false);
             }
+            return object;
+
+        }finally {
+            //还原所有加密的入参
+            OriginalValManager.recoveryAll();
         }
-
-        return object;
     }
-
-
 
 
 
@@ -236,36 +238,48 @@ public class DBInterceptor implements Interceptor {
      */
     private void modifyField(Object object,boolean encript){
 
-        Map<String,MethodBox> map= cache.get(object.getClass());
-        if(map==null){
+        Set<String> allFields=BeanAccessUtil.allFields(object.getClass());
+        if(allFields==null){
             return;
         }
-        for (Map.Entry<String,MethodBox> each:map.entrySet()){
-            MethodBox methodBox=each.getValue();
+
+        for (String field:allFields){
             try {
-                Object value=methodBox.getReadMethod().invoke(object,null);
+                Object value=BeanAccessUtil.readValue(object.getClass(),field,object);
                 if(value==null){
                    continue;
                 }
+
                 //String
-                if (value instanceof String){
-                   Object after = dealString(value,encript,object.getClass(),each.getKey());
-                   methodBox.getWriteMethod().invoke(object,new Object[]{after});
-                   continue;
+                if (value instanceof String) {
+                    Object after = dealString(value, encript, object.getClass(), field);
+                    //写入处理完的字段
+                    BeanAccessUtil.writeValue(object.getClass(), field, object, after);
+                    if (encript) {
+                        OriginalValManager.needRecoveryAfterProcess(object, field, value);
+                    }
+                    continue;
                 }
                 //List
-                if (value instanceof List) {
-                  List list=  (List)value;
-                  for (int i=0;i<list.size();i++ ){
-                      Object after=  dealString(list.get(i),encript,object.getClass(),each.getKey());
-                      list.set(i,after);
-                  }
-                  continue;
-                }
+               if (value instanceof List) {
+                   List list = (List) value;
+                   List afterList = new ArrayList(list.size());
+                   for (int i = 0; i < list.size(); i++) {
+                       Object after1 = dealString(list.get(i), encript, object.getClass(), field);
+                       afterList.add(i, after1);
+                   }
+                   //写入处理完的字段
+                   BeanAccessUtil.writeValue(object.getClass(), field, object, afterList);
+                   if (encript){
+                       OriginalValManager.needRecoveryAfterProcess(object, field, value);
+                   }
+                   continue;
+               }
 
-                log.error("classs:{},field:{} 不能访问,exception:{}",object.getClass(),each.getKey(),"不是String或 List<String>");
+               log.error("classs:{},field:{} 不能访问,exception:{}",object.getClass(),field,"不是String或 List<String>");
+
             } catch (Exception e) {
-                log.error("classs:{},field:{} 不能访问,exception:{}",object.getClass(),each.getKey(),e);
+                log.error("classs:{},field:{} 不能访问,exception:{}",object.getClass(),field,Throwables.getStackTraceAsString(e));
             }
         }
     }
