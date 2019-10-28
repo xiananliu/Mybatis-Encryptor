@@ -1,6 +1,7 @@
 <!ELEMENT settings (mapper*,setting)>
         <!ELEMENT setting (aeskey)>
         <!ELEMENT aeskey (#PCDATA)>
+        <!ELEMENT customEncryptorClass (#PCDATA)>
         <!--<!ELEMENT scanPackage (#PCDATA)>-->
         <!ELEMENT mapper (property+)>
         <!ATTLIST mapper className #REQUIRED>

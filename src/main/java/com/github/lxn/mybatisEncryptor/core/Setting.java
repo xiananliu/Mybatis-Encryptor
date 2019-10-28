@@ -1,9 +1,6 @@
 package com.github.lxn.mybatisEncryptor.core;
 
-import com.thoughtworks.xstream.annotations.XStreamImplicit;
 import lombok.Data;
-
-import java.util.List;
 
 /**
  * Created by lxn on 2018/10/20.
@@ -12,4 +9,6 @@ import java.util.List;
 public class Setting {
 
     private String aeskey;
+
+    private String customEncryptorClass;
 }

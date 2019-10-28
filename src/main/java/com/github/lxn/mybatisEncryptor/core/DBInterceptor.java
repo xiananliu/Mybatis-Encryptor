@@ -1,5 +1,6 @@
 package com.github.lxn.mybatisEncryptor.core;
 
+import com.github.lxn.mybatisEncryptor.extend.CustomEncryptor;
 import com.github.lxn.mybatisEncryptor.util.AESCoder;
 import com.github.lxn.mybatisEncryptor.util.EncryptorSettingUtils;
 import com.github.lxn.mybatisEncryptor.util.StringUtils;
@@ -33,6 +34,8 @@ public class DBInterceptor implements Interceptor {
 //    private Map<Class,Map<String,MethodBox>> cache =new HashMap<>();
 
     private Settings settings;
+
+    private CustomEncryptor customEncryptor;
 
 
 
@@ -320,13 +323,24 @@ public class DBInterceptor implements Interceptor {
 
        this.settings= EncryptorSettingUtils.getSettings(configLocation);
 
-        init();
+        try {
+            init();
+        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+            log.error("加解密插件初始化失败,e:{}",Throwables.getStackTraceAsString(e));
+        }
     }
 
     /**
      * 初始化
      */
-    private void init(){
+    private void init() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+
+        if (StringUtils.hasText(settings.getSetting().getCustomEncryptorClass())){
+           Class<CustomEncryptor> customEncryptorClass= (Class<CustomEncryptor>) Class.forName(settings.getSetting().getCustomEncryptorClass());
+            customEncryptor= customEncryptorClass.newInstance();
+        }
+
+
         List<Mapper> mappers=settings.getMappers();
         if (mappers==null||mappers.isEmpty()){
             return;
@@ -421,9 +435,13 @@ public class DBInterceptor implements Interceptor {
         if(!StringUtils.hasText(decryptData)){
             return decryptData;
         }
-        String deData = "";
+        String deData;
         try {
-            deData=  AESCoder.decrypt(decryptData,settings.getSetting().getAeskey());
+            if (customEncryptor!=null){
+                deData=customEncryptor.decrypt(decryptData);
+            }else {
+                deData=  AESCoder.decrypt(decryptData,settings.getSetting().getAeskey());
+            }
             return deData;
         } catch (Exception e) {
             log.error("数据解密异常:{}",decryptData);
@@ -440,7 +458,12 @@ public class DBInterceptor implements Interceptor {
             return encryptData;
         }
         try {
-            String enData=  AESCoder.encrpt(encryptData,settings.getSetting().getAeskey());
+            String enData;
+            if (customEncryptor!=null){
+                enData = customEncryptor.encrpt(encryptData);
+            }else {
+                enData =  AESCoder.encrpt(encryptData,settings.getSetting().getAeskey());
+            }
             return enData;
         } catch (Exception e) {
             log.error("数据加密异常:{}",encryptData);
